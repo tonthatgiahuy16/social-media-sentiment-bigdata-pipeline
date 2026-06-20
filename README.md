@@ -320,7 +320,7 @@ docs/dashboard.png
 ```
 
 ```markdown
-![Dashboard](docs/dashboard.png)
+![Dashboard](docs/assets/benchmark_parallel.png)
 ```
 
 ---
@@ -334,7 +334,7 @@ docs/benchmark.png
 ```
 
 ```markdown
-![Benchmark](docs/benchmark.png)
+![Benchmark](docs/assets/benchmark_parallel.png)
 ```
 
 ---
