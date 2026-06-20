@@ -1,7 +1,23 @@
 # Social Media Sentiment Analysis Platform
 
 A scalable Big Data platform for real-time and batch sentiment analysis of social media data using Apache Spark, Hadoop, Kafka, Airflow, FastAPI, and Docker.
+## Key Achievements
 
+✅ Processed 1.6 Million Tweets
+
+✅ Apache Spark Distributed Processing
+
+✅ Kafka Real-Time Streaming
+
+✅ 5.3× Faster than Sequential Execution
+
+✅ 429% Throughput Improvement
+
+✅ Automated ETL with Airflow
+
+✅ AUC-ROC ≈ 0.88
+
+✅ Fully Containerized with Docker
 ## Project Overview
 
 Social media platforms generate massive amounts of user-generated content every day. Extracting meaningful insights from this data requires a scalable and distributed processing architecture.
