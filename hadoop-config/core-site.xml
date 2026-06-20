@@ -1,0 +1,42 @@
+# Hadoop core-site.xml
+<configuration>
+  <property>
+    <name>fs.defaultFS</name>
+    <value>hdfs://namenode:9000</value>
+    <description>HDFS NameNode URI</description>
+  </property>
+  <property>
+    <name>hadoop.tmp.dir</name>
+    <value>/hadoop/tmp</value>
+  </property>
+  <property>
+    <name>dfs.replication</name>
+    <value>1</value>
+    <description>Replication factor for Sentiment140 dataset</description>
+  </property>
+  <property>
+    <name>dfs.blocksize</name>
+    <value>134217728</value>
+    <description>Block size: 128MB for large text files</description>
+  </property>
+  <property>
+    <name>dfs.namenode.name.dir</name>
+    <value>file:///hadoop/dfs/name</value>
+  </property>
+  <property>
+    <name>dfs.datanode.data.dir</name>
+    <value>file:///hadoop/dfs/data</value>
+  </property>
+  <property>
+    <name>io.file.buffer.size</name>
+    <value>131072</value>
+  </property>
+  <property>
+    <name>ipc.client.connect.max.retries</name>
+    <value>10</value>
+  </property>
+  <property>
+    <name>ipc.client.connect.retry.interval</name>
+    <value>5000</value>
+  </property>
+</configuration>

@@ -1,0 +1,337 @@
+services:
+  # ── Hadoop HDFS + YARN ──────────────────────────────────
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
+    hostname: namenode
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    ports:
+      - "9870:9870"   # HDFS Web UI
+      - "9000:9000"   # HDFS RPC
+    environment:
+      CLUSTER_NAME: sentiment-cluster
+      _JAVA_OPTIONS: "-Xmx512m"
+      CORE_CONF_fs_defaultFS: "hdfs://namenode:9000"
+      HDFS_CONF_dfs_namenode_rpc_address: "namenode:9000"
+    volumes:
+      - hdfs_namenode:/hadoop/dfs/name
+      - ./data/raw:/data/raw
+    networks:
+      - sentiment-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9870"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode
+    hostname: datanode
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    depends_on:
+      - namenode
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+      _JAVA_OPTIONS: "-Xmx512m"
+      CORE_CONF_fs_defaultFS: "hdfs://namenode:9000"
+    volumes:
+      - hdfs_datanode:/hadoop/dfs/data
+    networks:
+      - sentiment-net
+
+  resourcemanager:
+    image: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8
+    container_name: resourcemanager
+    hostname: resourcemanager
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    ports:
+      - "8088:8088"   # YARN Web UI
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+      _JAVA_OPTIONS: "-Xmx512m"
+      CORE_CONF_fs_defaultFS: "hdfs://namenode:9000"
+    networks:
+      - sentiment-net
+
+  nodemanager:
+    image: bde2020/hadoop-nodemanager:2.0.0-hadoop3.2.1-java8
+    container_name: nodemanager
+    hostname: nodemanager
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    depends_on:
+      - resourcemanager
+    environment:
+      SERVICE_PRECONDITION: "resourcemanager:8088"
+      _JAVA_OPTIONS: "-Xmx512m"
+      CORE_CONF_fs_defaultFS: "hdfs://namenode:9000"
+    networks:
+      - sentiment-net
+
+  # ── Apache Spark ──────────────────────────────────────────
+  spark-master:
+    image: spark:3.5.3
+    container_name: spark-master
+    hostname: spark-master
+    user: root
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    command: >
+      /bin/bash -c "
+        pip3 install --no-cache-dir pymongo kafka-python numpy mlflow &&
+        /opt/spark/sbin/start-master.sh &&
+        tail -f /dev/null
+      "
+    environment:
+      SPARK_NO_DAEMONIZE: "true"
+      SPARK_DAEMON_MEMORY: 512m
+      PATH: "/opt/spark/bin:/opt/spark/sbin:/opt/java/openjdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      SPARK_HOME: /opt/spark
+    ports:
+      - "8080:8080"   # Spark Master UI
+      - "7077:7077"   # Spark Master RPC
+    volumes:
+      - ./spark-config:/opt/spark/conf
+      - ./data:/data
+      - ./scripts:/data/scripts
+      - ./notebooks:/data/notebooks
+    networks:
+      - sentiment-net
+
+  spark-worker:
+    image: spark:3.5.3
+    container_name: spark-worker
+    hostname: spark-worker
+    user: root
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    command: >
+      /bin/bash -c "
+        pip3 install --no-cache-dir pymongo kafka-python numpy mlflow &&
+        /opt/spark/sbin/start-worker.sh spark://spark-master:7077 &&
+        tail -f /dev/null
+      "
+    environment:
+      SPARK_NO_DAEMONIZE: "true"
+      SPARK_WORKER_MEMORY: 1536m
+      SPARK_DAEMON_MEMORY: 512m
+    volumes:
+      - ./spark-config:/opt/spark/conf
+      - ./data:/data
+      - ./scripts:/data/scripts
+    depends_on:
+      - spark-master
+    networks:
+      - sentiment-net
+
+  # ── Apache Kafka (Low memory config) ──────────────────────
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    hostname: zookeeper
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_OPTS: "-Xmx256m -Xms256m"
+    ports:
+      - "2181:2181"
+    networks:
+      - sentiment-net
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    hostname: kafka
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_HEAP_OPTS: "-Xmx512m -Xms512m"
+    ports:
+      - "9092:9092"
+    networks:
+      - sentiment-net
+    volumes:
+      - ./scripts:/data/scripts
+
+  # ── Jupyter Notebook (Limited) ───────────────────────────
+  jupyter:
+    image: jupyter/pyspark-notebook:latest
+    container_name: jupyter-spark
+    hostname: jupyter-spark
+    deploy:
+      resources:
+        limits:
+          memory: 1536M
+    environment:
+      SPARK_HOME: /usr/local/spark
+      SPARK_MASTER: spark://spark-master:7077
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/home/jovyan/notebooks
+      - ./data:/data
+      - ./scripts:/home/jovyan/scripts
+    networks:
+      - sentiment-net
+
+  # ── Storage Services (Lightweight) ──────────────────────
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb
+    hostname: mongodb
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - sentiment-net
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    hostname: postgres
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    environment:
+      POSTGRES_DB: sentimentdb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - sentiment-net
+
+  # ── Apache Airflow (Orchestration) ──────────────────────
+  airflow-init:
+    image: apache/airflow:2.8.1-python3.11
+    container_name: airflow-init
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://admin:admin123@postgres/sentimentdb
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    command: version
+    user: "0:0"
+    volumes:
+      - ./airflow:/opt/airflow
+    networks:
+      - sentiment-net
+
+  airflow-webserver:
+    image: apache/airflow:2.8.1-python3.11
+    container_name: airflow-webserver
+    restart: always
+    depends_on:
+      - postgres
+      - airflow-init
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://admin:admin123@postgres/sentimentdb
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      _AIRFLOW_DB_UPGRADE: "true"
+      _AIRFLOW_WWW_USER_CREATE: "true"
+      _AIRFLOW_WWW_USER_USERNAME: admin
+      _AIRFLOW_WWW_USER_PASSWORD: admin
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+    networks:
+      - sentiment-net
+    command: webserver
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  airflow-scheduler:
+    image: apache/airflow:2.8.1-python3.11
+    container_name: airflow-scheduler
+    restart: always
+    depends_on:
+      - postgres
+      - airflow-init
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://admin:admin123@postgres/sentimentdb
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./scripts:/opt/airflow/scripts
+    networks:
+      - sentiment-net
+    command: scheduler
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  # ── API Service (FastAPI) ────────────────────────────────
+  api:
+    build:
+      context: ./api
+    container_name: sentiment-api
+    restart: always
+    depends_on:
+      - mongodb
+    ports:
+      - "8000:8000"
+    environment:
+      MONGO_URI: mongodb://mongodb:27017/
+      DB_NAME: sentiment_db
+    networks:
+      - sentiment-net
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+networks:
+  sentiment-net:
+    driver: bridge
+
+volumes:
+  hdfs_namenode:
+  hdfs_datanode:
+  mongodb_data:
+  postgres_data:

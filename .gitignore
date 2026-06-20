@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual Env
+venv/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+logs/
+
+# Big Data
+data/raw/
+data/temp/
+*.parquet
+
+# Spark
+spark-warehouse/
+
+# Hadoop
+tmp/
+
+# VSCode
+.vscode/
+
+# Docker
+*.log

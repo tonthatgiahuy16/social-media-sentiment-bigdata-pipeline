@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigData Sentiment Analysis | Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside>
+            <div class="logo-container">
+                <div class="logo-icon"><i data-lucide="brain-circuit" style="color: white;"></i></div>
+                <div class="logo-text">BigData AI</div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a class="nav-link active" onclick="showSection('overview')"><i data-lucide="layout-dashboard"></i> Dashboard</a></li>
+                    <li><a class="nav-link" onclick="showSection('data')"><i data-lucide="database"></i> Data Explore</a></li>
+                    <li><a class="nav-link" onclick="showSection('pipeline')"><i data-lucide="git-branch"></i> Pipeline Flow</a></li>
+                    <li><a class="nav-link" onclick="showSection('models')"><i data-lucide="bar-chart-3"></i> Model Compare</a></li>
+                    <li><a class="nav-link" onclick="showSection('prediction')"><i data-lucide="message-square"></i> Live Predict</a></li>
+                    <li><a class="nav-link" onclick="showSection('performance')"><i data-lucide="zap"></i> Benchmark</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main>
+            <header>
+                <div class="header-left">
+                    <h1 id="section-title">Dashboard Overview</h1>
+                    <p style="color: var(--text-dim);">Monitoring Spark & Hadoop Pipeline</p>
+                </div>
+                <div class="user-profile">
+                    <div class="avatar"></div>
+                    <span style="font-weight: 500;">BM-Rua Admin</span>
+                </div>
+            </header>
+
+            <!-- 1. DASHBOARD OVERVIEW -->
+            <section id="overview" class="section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">Total Tweets Processed</span>
+                        <div class="stat-value">1,600,000</div>
+                        <div class="stat-trend trend-up"><i data-lucide="arrow-up-right"></i> 100% Dataset</div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Positive Sentiment</span>
+                        <div class="stat-value" style="color: var(--success);">51.2%</div>
+                        <div class="stat-trend">819,200 tweets</div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Negative Sentiment</span>
+                        <div class="stat-value" style="color: var(--accent);">48.8%</div>
+                        <div class="stat-trend">780,800 tweets</div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Cluster Health</span>
+                        <div class="stat-value" style="color: var(--warning);">99.8%</div>
+                        <div class="stat-trend trend-up">Hadoop + Spark UP</div>
+                    </div>
+                </div>
+
+                <div class="charts-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+                    <div class="chart-card">
+                        <div class="chart-header"><span class="chart-title">Batch Processing (1.6M Tweets)</span></div>
+                        <canvas id="distributionChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <span class="chart-title">Real-time Streaming (Live)</span>
+                            <span class="best-badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981; float:right;" id="live-indicator">LIVE</span>
+                        </div>
+                        <canvas id="realtimeChart"></canvas>
+                        <div style="text-align: center; margin-top: 10px; font-weight: bold; color: var(--text-dim);" id="realtime-total">0 Live Tweets</div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-header"><span class="chart-title">Service Status</span></div>
+                        <ul style="list-style: none; padding-top: 1rem;">
+                            <li style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                                <span>HDFS Data Lake</span><span class="best-badge" style="background: rgba(16, 185, 129, 0.2);">ACTIVE</span>
+                            </li>
+                            <li style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                                <span>Spark Master</span><span class="best-badge">ACTIVE</span>
+                            </li>
+                            <li style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                                <span>Kafka Streams</span><span class="best-badge" id="kafka-status" style="background: rgba(16, 185, 129, 0.2);">STREAMING</span>
+                            </li>
+                            <li style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                                <span>MongoDB</span><span class="best-badge" style="background: rgba(16, 185, 129, 0.2);">ACTIVE</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. DATA EXPLORATION -->
+            <section id="data" class="section">
+                <div class="chart-card">
+                    <div class="chart-header"><span class="chart-title">Top Keywords (1.6M Dataset)</span></div>
+                    <canvas id="keywordChart"></canvas>
+                </div>
+                <div class="chart-card" style="margin-top: 1.5rem;">
+                    <div class="chart-header"><span class="chart-title">Dataset Preview</span></div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Target</th>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Text Preview</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataPreview">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 3. PIPELINE VISUALIZATION -->
+            <section id="pipeline" class="section">
+                <div class="chart-card">
+                    <div class="pipeline-flow">
+                        <div class="stage">
+                            <i data-lucide="download-cloud"></i>
+                            <h4>Ingestion</h4>
+                            <p>HDFS Upload</p>
+                        </div>
+                        <div class="stage-arrow"><i data-lucide="chevron-right"></i></div>
+                        <div class="stage">
+                            <i data-lucide="layers"></i>
+                            <h4>Preprocessing</h4>
+                            <p>Cleaning</p>
+                        </div>
+                        <div class="stage-arrow"><i data-lucide="chevron-right"></i></div>
+                        <div class="stage">
+                            <i data-lucide="wand-2"></i>
+                            <h4>Features</h4>
+                            <p>TF-IDF</p>
+                        </div>
+                        <div class="stage-arrow"><i data-lucide="chevron-right"></i></div>
+                        <div class="stage">
+                            <i data-lucide="cpu"></i>
+                            <h4>Training</h4>
+                            <p>Spark ML</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. MODEL COMPARISON -->
+            <section id="models" class="section">
+                <div class="stats-grid">
+                    <div class="stat-card" style="border-left: 4px solid var(--success);">
+                        <span class="stat-label">Best Model</span>
+                        <div class="stat-value" id="best-model-name">Logistic Regression</div>
+                        <span class="best-badge">F1 Score: 0.8124</span>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header"><span class="chart-title">Performance Comparison</span></div>
+                    <canvas id="modelCompareChart"></canvas>
+                </div>
+            </section>
+
+            <!-- 5. LIVE PREDICTION -->
+            <section id="prediction" class="section">
+                <div class="prediction-box">
+                    <h2>Test Your Model</h2>
+                    <p style="color: var(--text-dim); margin-bottom: 2rem;">Enter text to analyze sentiment in real-time using the saved Spark model</p>
+                    <textarea id="inputText" placeholder="Type something... e.g. I absolutely love this project!"></textarea>
+                    <button class="btn-predict" onclick="predictSentiment()">Predict Sentiment</button>
+                    
+                    <div id="resultBox" class="prediction-result">
+                        <div class="stat-card" style="max-width: 400px; margin: 2rem auto;">
+                            <span class="stat-label">Prediction Result</span>
+                            <div class="stat-value" id="pred-label">POSITIVE</div>
+                            <div class="stat-trend" id="pred-confidence">Confidence: 94.2%</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. PERFORMANCE BENCHMARK -->
+            <section id="performance" class="section">
+                <div class="chart-card">
+                    <div class="chart-header"><span class="chart-title">Spark vs Single-Thread Python (Speedup)</span></div>
+                    <canvas id="benchmarkChart"></canvas>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="/static/script.js?v=3"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
