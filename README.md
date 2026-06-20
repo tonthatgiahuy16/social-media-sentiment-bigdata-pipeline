@@ -295,47 +295,74 @@ social-media-sentiment-bigdata-pipeline
 
 ---
 
-# Screenshots
+# Analytics & Visualization
 
-## System Architecture
+The platform provides multiple analytical views for monitoring sentiment trends, model performance, and real-time processing results.
 
-Add image:
+## Sentiment Distribution
 
-```text
-docs/architecture.png
-```
+Distribution of positive and negative sentiments across the dataset.
 
-```markdown
-![Architecture](docs/architecture.png)
-```
+<p align="center">
+  <img src="docs/assets/sentiment_distribution.png" width="800">
+</p>
 
 ---
 
-## Dashboard
+## Sentiment Trend Analysis
 
-Add image:
+Visualization of sentiment changes over time.
 
-```text
-docs/dashboard.png
-```
-
-```markdown
-![Dashboard](docs/assets/benchmark_parallel.png)
-```
+<p align="center">
+  <img src="docs/assets/sentiment_trend.png" width="800">
+</p>
 
 ---
 
-## Performance Benchmark
+## Most Frequent Keywords
 
-Add image:
+Top frequently occurring words extracted from social media posts after preprocessing.
 
-```text
-docs/benchmark.png
-```
+<p align="center">
+  <img src="docs/assets/top_words.png" width="800">
+</p>
 
-```markdown
-![Benchmark](docs/assets/benchmark_parallel.png)
-```
+---
+
+## Machine Learning Model Comparison
+
+Performance comparison of evaluated sentiment classification models.
+
+<p align="center">
+  <img src="docs/assets/model_comparison.png" width="800">
+</p>
+
+---
+
+## Real-Time Streaming Results
+
+Real-time sentiment distribution generated from Kafka + Spark Streaming.
+
+<p align="center">
+  <img src="docs/assets/realtime_distribution.png" width="800">
+</p>
+
+---
+
+# Performance Benchmark
+
+To evaluate the effectiveness of distributed processing, the Spark implementation was compared against a sequential execution approach.
+
+### Key Findings
+
+* Processing time reduced from **45.0 seconds** to **8.5 seconds**
+* Achieved **5.3× speedup**
+* Throughput increased from **222 records/second** to **1,176 records/second**
+* Overall throughput improvement of **429%**
+
+<p align="center">
+  <img src="docs/assets/benchmark_parallel.png" width="1000">
+</p>
 
 ---
 
@@ -345,30 +372,53 @@ docs/benchmark.png
 
 ```bash
 git clone https://github.com/tonthatgiahuy16/social-media-sentiment-bigdata-pipeline.git
+cd social-media-sentiment-bigdata-pipeline
 ```
 
-## Start Services
+## Start Infrastructure Services
 
 ```bash
 docker-compose up -d
 ```
 
-## Run Pipeline
+This command launches:
+
+* Hadoop HDFS
+* Apache Spark Cluster
+* Apache Kafka
+* Apache Airflow
+* PostgreSQL
+* MongoDB
+
+## Run the Data Pipeline
+
+Linux / WSL:
 
 ```bash
+chmod +x run_pipeline.sh
 ./run_pipeline.sh
+```
+
+Windows PowerShell:
+
+```powershell
+.\run_pipeline.sh
 ```
 
 ---
 
 # Future Improvements
 
-- Deploy on AWS Cloud
-- Implement Data Lake Architecture
-- Integrate MLflow for experiment tracking
-- Add Kubernetes orchestration
-- Add CI/CD pipeline
-- Implement real-time monitoring with Grafana
+Planned enhancements include:
+
+* Deploying the platform on AWS Cloud
+* Building a Data Lake architecture using S3
+* Integrating MLflow for experiment tracking
+* Implementing Kubernetes orchestration
+* Adding CI/CD pipelines using GitHub Actions
+* Integrating Grafana dashboards for monitoring
+* Supporting additional sentiment classes (Neutral, Mixed)
+* Real-time alerting for sentiment spikes
 
 ---
 
@@ -378,18 +428,22 @@ docker-compose up -d
 
 Final-Year Information Technology Student
 
-### Interests
+### Areas of Interest
 
-- Data Engineering
-- Big Data Analytics
-- Distributed Systems
-- Machine Learning
+* Data Engineering
+* Big Data Analytics
+* Distributed Systems
+* Machine Learning
+* Cloud Computing
+
+### Contact
 
 GitHub:
 https://github.com/tonthatgiahuy16
 
 LinkedIn:
-(Add your LinkedIn profile)
+https://www.linkedin.com/in/your-profile
 
 Email:
-(Add your email)
+[your-email@example.com](mailto:your-email@example.com)
+
