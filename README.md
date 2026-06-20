@@ -442,8 +442,8 @@ GitHub:
 https://github.com/tonthatgiahuy16
 
 LinkedIn:
-[https://www.linkedin.com/in/your-profile](https://www.linkedin.com/in/t%C3%B4n-th%E1%BA%A5t-gia-huy-708860369/)
+https://www.linkedin.com/in/t%C3%B4n-th%E1%BA%A5t-gia-huy-708860369/
 
 Email:
-[your-email@example.com](mailto:tonthatgiahuy160505@gmail.com)
+mailto:tonthatgiahuy160505@gmail.com
 
