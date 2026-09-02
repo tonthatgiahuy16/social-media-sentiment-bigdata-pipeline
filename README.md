@@ -1,465 +1,217 @@
-# Social Media Sentiment Analysis Platform
-
-A scalable Big Data platform for real-time and batch sentiment analysis of social media data using Apache Spark, Hadoop, Kafka, Airflow, FastAPI, and Docker.
-## Key Achievements
+# Social Media Sentiment Big Data Pipeline
 
-✅ Processed 1.6 Million Tweets
+> A coursework prototype for exploring batch processing and simulated streaming with Spark, HDFS, Kafka, FastAPI, MongoDB, and Docker Compose.
 
-✅ Apache Spark Distributed Processing
+This repository documents a local learning project built around the Sentiment140 dataset. The strongest part of the project is the batch workflow: storing raw data in HDFS, transforming it with PySpark, creating text features, training Spark ML models, and exposing saved results through an API.
 
-✅ Kafka Real-Time Streaming
+The repository also contains a Kafka and Spark Structured Streaming demo. That path currently uses synthetic messages and rule-based sentiment labels; it should not be interpreted as a production social-media feed or a deployed ML inference service.
 
-✅ 5.3× Faster than Sequential Execution
+## Project status
 
-✅ 429% Throughput Improvement
+| Area | Current state |
+| --- | --- |
+| Batch ingestion and HDFS storage | Implemented |
+| PySpark preprocessing and feature extraction | Implemented |
+| Spark ML training and batch prediction | Implemented as a local coursework workflow |
+| FastAPI endpoints backed by MongoDB | Implemented |
+| Kafka and Spark streaming | Working demonstration with synthetic input |
+| Airflow orchestration | Placeholder DAG; not yet connected to the Spark jobs |
+| PostgreSQL | Used for Airflow metadata, not application analytics |
+| Automated tests and CI/CD | Not implemented |
+| Cloud deployment and monitoring | Not implemented |
 
-✅ Automated ETL with Airflow
+## What the project contains
 
-✅ AUC-ROC ≈ 0.88
+### Batch workflow
 
-✅ Fully Containerized with Docker
-## Project Overview
+~~~text
+Sentiment140 CSV
+    -> HDFS raw storage
+    -> PySpark cleaning and tokenization
+    -> Parquet datasets
+    -> TF-IDF / Word2Vec feature generation
+    -> Spark ML training and evaluation
+    -> HDFS model outputs and MongoDB result collections
+    -> FastAPI analytics endpoints
+~~~
 
-Social media platforms generate massive amounts of user-generated content every day. Extracting meaningful insights from this data requires a scalable and distributed processing architecture.
+The batch scripts cover:
 
-This project implements an end-to-end Big Data pipeline capable of ingesting, processing, analyzing, and serving sentiment insights from millions of social media posts. The platform supports both batch and streaming workloads and demonstrates modern Data Engineering practices using distributed technologies.
+- Loading approximately 1.6 million Sentiment140 records.
+- Cleaning URLs, mentions, repeated characters, and stopwords.
+- Creating partitioned Parquet outputs.
+- Generating TF-IDF, Word2Vec, and n-gram features.
+- Comparing Random Forest, Linear SVM, and Multilayer Perceptron models on sampled training data.
+- Saving model metadata, metrics, and a limited set of predictions for downstream access.
 
-## Resume Highlights
+### Streaming demonstration
 
-**Role:** Data Engineer / Big Data Developer
+~~~text
+Synthetic tweet producer
+    -> Kafka topic
+    -> Spark Structured Streaming
+    -> Rule-based sentiment function
+    -> MongoDB predictions
+~~~
 
-### Key Contributions
+The producer replays a small built-in set of example messages. The streaming consumer demonstrates Kafka-to-Spark-to-MongoDB data movement, but it does not yet load the trained batch model.
 
-- Designed and implemented a 4-layer Big Data architecture.
-- Built an ETL pipeline for processing 1.6 million tweets.
-- Developed distributed sentiment analysis workflows using Apache Spark.
-- Implemented real-time streaming with Apache Kafka.
-- Automated workflows using Apache Airflow.
-- Containerized the entire platform using Docker Compose.
-- Built REST APIs for data access and analytics services.
+### Local runner and Airflow
 
-### Technologies
+The interactive **run_pipeline.sh** script can start the environment and invoke the HDFS, Spark, training, benchmark, and visualization scripts.
 
-Apache Spark · Hadoop HDFS · Kafka · Airflow · FastAPI · MongoDB · PostgreSQL · Docker · Machine Learning
+An Airflow DAG is included to demonstrate task ordering and scheduling concepts. Its current tasks use echo and sleep commands; wiring it to real Spark submissions remains future work.
 
----
+## Recorded coursework results
 
-# Key Results
+The following measurements were recorded during the original local coursework run and are retained as project evidence:
 
-| Metric | Result |
-|----------|----------|
-| Dataset Size | 1.6 Million Tweets |
-| Storage Compression | 3x Reduction (238 MB → 79 MB) |
-| Processing Speed Improvement | 5.3x Faster |
-| Throughput Improvement | 429% Increase |
-| Best Model Performance | AUC-ROC ≈ 0.88 |
-| Deployment | Dockerized |
+| Measurement | Recorded result |
+| --- | --- |
+| Input data | Approximately 1.6 million tweets |
+| Raw CSV to partitioned Parquet | 238 MB to 79 MB |
+| Sequential throughput | 222 records/second |
+| PySpark throughput | 1,176 records/second |
+| Reported model AUC-ROC | Approximately 0.88 |
 
----
+These are environment-specific observations, not universal performance claims. The current benchmark script does not yet guarantee identical work and record counts across both execution paths. A stronger benchmark would persist raw logs, machine specifications, dataset counts, and repeated runs.
 
-# System Architecture
+## Visual outputs
 
-The platform follows a layered architecture designed for scalability and maintainability.
+### Sentiment distribution
 
-```text
-Social Media Data
-        │
-        ▼
- ┌─────────────────┐
- │ Data Ingestion  │
- │ Kafka Producer  │
- └─────────────────┘
-        │
-        ▼
- ┌─────────────────┐
- │ Data Storage    │
- │ Hadoop HDFS     │
- └─────────────────┘
-        │
-        ▼
- ┌─────────────────┐
- │ Data Processing │
- │ Apache Spark    │
- └─────────────────┘
-        │
-        ▼
- ┌─────────────────┐
- │ Orchestration   │
- │ Apache Airflow  │
- └─────────────────┘
-        │
-        ▼
- ┌─────────────────┐
- │ Serving Layer   │
- │ FastAPI         │
- └─────────────────┘
-        │
-        ▼
- PostgreSQL / MongoDB
-```
+<p align="center">
+  <img src="docs/assets/sentiment_distribution.png" width="800" alt="Sentiment distribution chart">
+</p>
 
----
+### Model comparison
 
-# Data Flow
+<p align="center">
+  <img src="docs/assets/model_comparison.png" width="800" alt="Model comparison chart">
+</p>
 
-```mermaid
-flowchart LR
+### Local parallel-processing benchmark
 
-A[Twitter Dataset] --> B[Kafka Producer]
+<p align="center">
+  <img src="docs/assets/benchmark_parallel.png" width="1000" alt="Local sequential and PySpark benchmark">
+</p>
 
-B --> C[Kafka Topic]
+## Repository structure
 
-C --> D[Spark Streaming]
-
-D --> E[Data Cleaning]
-
-E --> F[Feature Engineering]
-
-F --> G[Sentiment Classification]
-
-G --> H[HDFS Storage]
-
-H --> I[PostgreSQL]
-
-H --> J[MongoDB]
-
-I --> K[FastAPI]
-
-J --> K
-
-K --> L[Dashboard]
-```
-
----
-
-# Dataset
-
-## Sentiment140 Dataset
-
-Source:
-
-http://help.sentiment140.com/for-students
-
-### Dataset Information
-
-- Approximately 1.6 million tweets
-- Binary sentiment classification
-
-| Label | Meaning |
-|---------|---------|
-| 0 | Negative |
-| 4 | Positive |
-
-The dataset is used to evaluate both batch and streaming sentiment analysis pipelines.
-
----
-
-# Technology Stack
-
-## Data Engineering
-
-- Apache Spark
-- Hadoop HDFS
-- Apache Kafka
-- Apache Airflow
-
-## Backend Development
-
-- FastAPI
-- Python
-
-## Databases
-
-- PostgreSQL
-- MongoDB
-
-## Infrastructure
-
-- Docker
-- Docker Compose
-
-## Machine Learning
-
-- Scikit-learn
-- Logistic Regression
-- Random Forest
-- Support Vector Machine
-
----
-
-# Project Workflow
-
-## 1. Data Ingestion
-
-- Load raw social media data
-- Stream data using Kafka producers
-- Persist raw datasets to HDFS
-
-## 2. Data Processing
-
-Apache Spark performs:
-
-- Text cleaning
-- Tokenization
-- Stopword removal
-- Feature extraction
-- Sentiment prediction
-
-## 3. Workflow Orchestration
-
-Apache Airflow manages:
-
-- ETL scheduling
-- Data preprocessing
-- Model execution
-- Data loading
-
-## 4. Storage Layer
-
-### Hadoop HDFS
-
-Stores:
-
-- Raw datasets
-- Processed datasets
-- Model outputs
-
-### PostgreSQL
-
-Stores:
-
-- Structured analytical results
-- Aggregated metrics
-
-### MongoDB
-
-Stores:
-
-- Semi-structured sentiment records
-- Streaming results
-
-## 5. API Layer
-
-FastAPI provides:
-
-- Analytics endpoints
-- Sentiment queries
-- Reporting services
-
----
-
-# Machine Learning Pipeline
-
-## Data Preprocessing
-
-- Text normalization
-- URL removal
-- Special character removal
-- Stopword filtering
-
-## Feature Engineering
-
-- TF-IDF Vectorization
-
-## Models Evaluated
-
-- Logistic Regression
-- Random Forest
-- Support Vector Machine (SVM)
-
-## Best Performance
-
-| Metric | Score |
-|----------|----------|
-| AUC-ROC | 0.88 |
-| Dataset Size | 1.6M Tweets |
-
----
-
-# Repository Structure
-
-```text
-social-media-sentiment-bigdata-pipeline
-│
+~~~text
+social-media-sentiment-bigdata-pipeline/
 ├── airflow/
+│   ├── airflow.cfg
 │   └── dags/
-│
+│       └── sentiment_pipeline.py
 ├── api/
-│
+│   ├── Dockerfile
+│   └── main.py
 ├── dashboard/
-│
+│   ├── app.py
+│   ├── index.html
+│   ├── script.js
+│   └── style.css
 ├── docs/
-│
+│   ├── assets/
+│   ├── HUONG_DAN_WINDOWS.md
+│   └── report_summary.md
 ├── hadoop-config/
-│
 ├── notebooks/
-│
+│   └── sentiment_pipeline.ipynb
 ├── scripts/
-│   ├── ingestion/
-│   ├── preprocessing/
-│   ├── training/
-│   └── streaming/
-│
+│   ├── hadoop/
+│   ├── kafka/
+│   ├── spark/
+│   ├── download_data.sh
+│   └── visualization.py
 ├── spark-config/
-│
 ├── docker-compose.yml
-│
-├── run_pipeline.sh
-│
-└── README.md
-```
+└── run_pipeline.sh
+~~~
 
----
+## Run locally
 
-# Analytics & Visualization
+### Requirements
 
-The platform provides multiple analytical views for monitoring sentiment trends, model performance, and real-time processing results.
+- Docker Desktop or Docker Engine with Docker Compose.
+- Git Bash, WSL, or a Linux/macOS shell for the shell scripts.
+- Kaggle CLI credentials are recommended for downloading Sentiment140.
+- Enough local memory for the Hadoop, Spark, Kafka, Airflow, database, and API services.
 
-## Sentiment Distribution
+### 1. Clone the repository
 
-Distribution of positive and negative sentiments across the dataset.
-
-<p align="center">
-  <img src="docs/assets/sentiment_distribution.png" width="800">
-</p>
-
----
-
-## Sentiment Trend Analysis
-
-Visualization of sentiment changes over time.
-
-<p align="center">
-  <img src="docs/assets/sentiment_trend.png" width="800">
-</p>
-
----
-
-## Most Frequent Keywords
-
-Top frequently occurring words extracted from social media posts after preprocessing.
-
-<p align="center">
-  <img src="docs/assets/top_words.png" width="800">
-</p>
-
----
-
-## Machine Learning Model Comparison
-
-Performance comparison of evaluated sentiment classification models.
-
-<p align="center">
-  <img src="docs/assets/model_comparison.png" width="800">
-</p>
-
----
-
-## Real-Time Streaming Results
-
-Real-time sentiment distribution generated from Kafka + Spark Streaming.
-
-<p align="center">
-  <img src="docs/assets/realtime_distribution.png" width="800">
-</p>
-
----
-
-# Performance Benchmark
-
-To evaluate the effectiveness of distributed processing, the Spark implementation was compared against a sequential execution approach.
-
-### Key Findings
-
-* Processing time reduced from **45.0 seconds** to **8.5 seconds**
-* Achieved **5.3× speedup**
-* Throughput increased from **222 records/second** to **1,176 records/second**
-* Overall throughput improvement of **429%**
-
-<p align="center">
-  <img src="docs/assets/benchmark_parallel.png" width="1000">
-</p>
-
----
-
-# Installation
-
-## Clone Repository
-
-```bash
+~~~bash
 git clone https://github.com/tonthatgiahuy16/social-media-sentiment-bigdata-pipeline.git
 cd social-media-sentiment-bigdata-pipeline
-```
+~~~
 
-## Start Infrastructure Services
+### 2. Download the dataset
 
-```bash
-docker-compose up -d
-```
+The recommended source is the Sentiment140 dataset on Kaggle:
 
-This command launches:
+https://www.kaggle.com/datasets/kazanova/sentiment140
 
-* Hadoop HDFS
-* Apache Spark Cluster
-* Apache Kafka
-* Apache Airflow
-* PostgreSQL
-* MongoDB
+After downloading, place the CSV at:
 
-## Run the Data Pipeline
+~~~text
+data/raw/sentiment140_full.csv
+~~~
 
-Linux / WSL:
+The fallback URL in **scripts/download_data.sh** may be unavailable; prefer the Kaggle CLI or a manual download.
 
-```bash
+### 3. Start the local services
+
+~~~bash
+docker compose up -d
+~~~
+
+Docker Compose declares Hadoop/YARN, Spark, Kafka/Zookeeper, Airflow, MongoDB, PostgreSQL, Jupyter, and FastAPI services. Airflow initialization is a one-time job, so the number of running containers may differ from the number of declared services.
+
+### 4. Run the interactive batch workflow
+
+On Linux, macOS, Git Bash, or WSL:
+
+~~~bash
 chmod +x run_pipeline.sh
 ./run_pipeline.sh
-```
+~~~
 
-Windows PowerShell:
+From Windows PowerShell, run the script through WSL or open the repository in Git Bash. PowerShell does not execute a Bash script directly with **.\run_pipeline.sh**.
 
-```powershell
-.\run_pipeline.sh
-```
+### 5. Inspect the services
 
----
+- HDFS NameNode: http://localhost:9870
+- YARN ResourceManager: http://localhost:8088
+- Spark Master: http://localhost:8080
+- Airflow: http://localhost:8081
+- FastAPI documentation: http://localhost:8000/docs
+- Jupyter: http://localhost:8888
 
-# Future Improvements
+## Known limitations
 
-Planned enhancements include:
+- The Airflow DAG is not connected to the implemented Spark scripts.
+- Streaming uses generated sample messages and rule-based sentiment rather than the trained model.
+- The dashboard prediction route contains demonstration logic.
+- PostgreSQL currently supports Airflow metadata; application results are served from MongoDB.
+- The benchmark needs an equivalent workload, repeated runs, and saved raw evidence.
+- There is no automated test suite, CI/CD pipeline, cloud deployment, authentication, or production monitoring.
+- The repository is designed for local coursework and requires substantial Docker resources.
 
-* Deploying the platform on AWS Cloud
-* Building a Data Lake architecture using S3
-* Integrating MLflow for experiment tracking
-* Implementing Kubernetes orchestration
-* Adding CI/CD pipelines using GitHub Actions
-* Integrating Grafana dashboards for monitoring
-* Supporting additional sentiment classes (Neutral, Mixed)
-* Real-time alerting for sentiment spikes
+## Next engineering steps
 
----
+1. Replace placeholder Airflow tasks with SparkSubmitOperator jobs and explicit data dependencies.
+2. Replay records from the source dataset through Kafka and load the trained model in the streaming path.
+3. Add automated tests for preprocessing, APIs, and pipeline contracts.
+4. Rework the benchmark so sequential and Spark implementations process identical inputs.
+5. Save benchmark metadata and outputs as reproducible artifacts.
+6. Add health checks, structured logging, and CI for the smaller testable components.
 
-# Author
+## Author
 
-## Ton That Gia Huy
+**Tôn Thất Gia Huy**  
+Final-year Data Science student interested in Backend and Data Engineering roles.
 
-Final-Year Data Science Student
-
-### Areas of Interest
-
-* Data Engineering
-* Big Data Analytics
-* Distributed Systems
-* Machine Learning
-* Cloud Computing
-
-### Contact
-
-GitHub:
-https://github.com/tonthatgiahuy16
-
-LinkedIn:
-https://www.linkedin.com/in/t%C3%B4n-th%E1%BA%A5t-gia-huy-708860369/
-
-Email:
-mailto:tonthatgiahuy160505@gmail.com
-
+- [GitHub](https://github.com/tonthatgiahuy16)
+- [LinkedIn](https://www.linkedin.com/in/ton-that-gia-huy/)
+- [Portfolio](https://tonthatgiahuy16.github.io)
